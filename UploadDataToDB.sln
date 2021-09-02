@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.810.8
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UploadDataToDB", "UploadDataToDB\UploadDataToDB.csproj", "{B2BD0F99-EEAB-4A4E-93FA-B7475E412DF6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B2BD0F99-EEAB-4A4E-93FA-B7475E412DF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2BD0F99-EEAB-4A4E-93FA-B7475E412DF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2BD0F99-EEAB-4A4E-93FA-B7475E412DF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2BD0F99-EEAB-4A4E-93FA-B7475E412DF6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5BEE7BD6-BB40-40B7-94B1-D46D78231CA2}
+	EndGlobalSection
+EndGlobal

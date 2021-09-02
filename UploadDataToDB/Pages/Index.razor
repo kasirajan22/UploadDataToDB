@@ -1,0 +1,121 @@
+﻿@page "/"
+
+<h1>Upload Data To Database</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="row">
+            <div class="col-md-12">
+                <input type="text" class="form-control" @bind-value="ConnectString" /> <br />
+                <button type="button" class="btn btn-primary" @onclick="GetTableClick">Get Tables</button>
+                <br />
+                @if (tbl != null)
+                {
+                    <select class="form-control" @onchange="GetTableColumns">
+                        <option value="">--Select--</option>
+                        @foreach (MTable dt in tbl)
+                        {
+                            <option value="@dt.ObjectID">@(dt.SchemaName + "." + dt.TableName)</option>
+                        }
+                    </select>
+                }
+                <span>
+                    Error: @Error
+                </span>
+                <span>
+                    Inner Exception: @InnerException
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+    public string Error { get; set; }
+    public string InnerException { get; set; }
+    public string ConnectString { get; set; }
+    public List<MTable> tbl { get; set; }
+    public List<MColumns> clm { get; set; }
+    public List<MColumnFK> clmfk { get; set; }
+
+    public void GetTableClick()
+    {
+        if (!string.IsNullOrEmpty(ConnectString))
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(ConnectString))
+                {
+                    tbl = con.Query<MTable>("select schema_name(schema_id) as SchemaName,name as TableName,object_id as ObjectID from sys.tables", commandType: CommandType.Text).ToList();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Error = ex.Message;
+                InnerException = ex.InnerException.ToString();
+            }
+        }
+    }
+
+    public void GetTableColumns(ChangeEventArgs e)
+    {
+        if (e.Value.ToString() != "--Select--")
+        {
+            try
+            {
+                StringBuilder QColumns = new StringBuilder();
+                QColumns.Append("SELECT ");
+                QColumns.Append("c.name ColumnName,");
+                QColumns.Append("t.Name DataType,");
+                QColumns.Append("c.max_length MaxLength,");
+                QColumns.Append("c.is_nullable as IsNullable,");
+                QColumns.Append("ISNULL(i.is_primary_key, 0) PrimaryKey,");
+                QColumns.Append("c.column_id as ColumnID ");
+                QColumns.Append("FROM ");
+                QColumns.Append("sys.columns c ");
+                QColumns.Append("INNER JOIN ");
+                QColumns.Append("sys.types t ON c.user_type_id = t.user_type_id ");
+                QColumns.Append("LEFT OUTER JOIN ");
+                QColumns.Append("sys.index_columns ic ON ic.object_id = c.object_id AND ic.column_id = c.column_id ");
+                QColumns.Append("LEFT OUTER JOIN ");
+                QColumns.Append("sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id ");
+                QColumns.Append("WHERE ");
+                QColumns.Append("c.object_id = @ObjectID ");
+                QColumns.Append("ORDER BY ");
+                QColumns.Append("c.column_id");
+
+                StringBuilder QFK = new StringBuilder();
+                QFK.Append("SELECT ");
+                QFK.Append("t.name as TableWithForeignKey,");
+                QFK.Append("fk.constraint_column_id as FKPartNo,");
+                QFK.Append("c.name as ForeignKeyColumn,");
+                QFK.Append("c.column_id as ColumnID ");
+                QFK.Append("FROM ");
+                QFK.Append("sys.foreign_key_columns as fk ");
+                QFK.Append("INNER JOIN ");
+                QFK.Append("sys.tables as t on fk.parent_object_id = t.object_id ");
+                QFK.Append("INNER JOIN ");
+                QFK.Append("sys.columns as c on fk.parent_object_id = c.object_id and fk.parent_column_id = c.column_id ");
+                QFK.Append("WHERE ");
+                QFK.Append("fk.referenced_object_id = @ObjectID ");
+                QFK.Append("ORDER BY ");
+                QFK.Append("TableWithForeignKey, FKPartNo,c.column_id");
+
+                using (SqlConnection con = new SqlConnection(ConnectString))
+                {
+                    var p = new DynamicParameters();
+                    p.Add("ObjectID", e.Value.ToString());
+                    clm = con.Query<MColumns>(QColumns.ToString(), p, commandType: CommandType.Text).ToList();
+
+                    clmfk = con.Query<MColumnFK>(QFK.ToString(), p, commandType: CommandType.Text).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                Error = ex.Message;
+                InnerException = ex.InnerException.ToString();
+            }
+        }
+    }
+}
